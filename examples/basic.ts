@@ -5,7 +5,7 @@ import { createClient, FailReasons } from '@identro/sdk';
 // Initialize the client
 const identro = createClient({
   apiKey: 'your-api-key-here',
-  endpoint: 'http://localhost:3000', // Use production URL in real usage
+  endpoint: 'https://api.identro.xyz', // Use production URL in real usage
   debug: true, // Enable debug logging
   agentId: 'example-agent-001',
   framework: 'custom'

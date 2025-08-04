@@ -48,7 +48,7 @@
   "bugs": {
     "url": "https://github.com/identro-ai/identro-sdk-js/issues"
   },
-  "homepage": "https://github.com/identro-ai/identro-sdk-js#readme",
+  "homepage": "https://identro.xyz",
   "devDependencies": {
     "vitest": "^3.2.4"
   },

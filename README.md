@@ -1,34 +1,39 @@
 # @identro/sdk
 
-TypeScript SDK for Identro - AI Agent Credit Scoring System
+**TypeScript SDK for Identro - AI Agent Credit Scoring System**
 
-[![npm version](https://img.shields.io/npm/v/@identro/sdk.svg)](https://www.npmjs.com/package/@identro/sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+> Build verifiable reputation for AI agents with FICO-like credit scores (300-850). Privacy-first, framework-agnostic, and production-ready.
 
 ## 🚀 Installation
 
+Since the package is not yet published to NPM, install directly from GitHub:
+
 ```bash
 # npm
-npm install @identro/sdk
+npm install https://github.com/identro-ai/identro-sdk-js.git
 
 # yarn
-yarn add @identro/sdk
+yarn add https://github.com/identro-ai/identro-sdk-js.git
 
 # pnpm
-pnpm add @identro/sdk
+pnpm add https://github.com/identro-ai/identro-sdk-js.git
 
 # bun
-bun add @identro/sdk
+bun add https://github.com/identro-ai/identro-sdk-js.git
 ```
 
-## 📋 Quick Start
+## ⚡ Quick Start
 
 ```typescript
 import { createClient } from '@identro/sdk';
 
 // Initialize the client
 const identro = createClient({
-  apiKey: 'your-api-key-here'
+  apiKey: 'your-api-key-here',
+  endpoint: 'https://api.identro.xyz' // Use your Identro API endpoint
 });
 
 // Record a successful task
@@ -39,7 +44,7 @@ await identro.recordFailure('task-456', 3000, 'NETWORK_ERROR');
 
 // Get your agent's score
 const score = await identro.getScore();
-console.log(`Agent score: ${score.score} (${score.tier})`);
+console.log(`Agent score: ${score.score}/850 (${score.tier})`);
 ```
 
 ## 🔧 Configuration
@@ -50,9 +55,9 @@ const identro = createClient({
   apiKey: 'your-api-key',
   
   // Optional
-  endpoint: 'https://api.identro.com',    // API endpoint
+  endpoint: 'https://api.identro.xyz',    // API endpoint
   agentId: 'my-agent-001',               // Default agent ID
-  framework: 'langchain',                 // Default framework
+  framework: 'custom',                   // Framework identifier
   
   // Batching (for performance)
   batchSize: 100,                        // Events per batch
@@ -68,125 +73,184 @@ const identro = createClient({
 });
 ```
 
-## 📊 Recording Events
+## 📊 Core Workflows
 
-### Simple Success/Failure
+### 1. Recording Agent Performance
+
+Track your agent's task execution to build reputation:
 
 ```typescript
-// Record success with latency
-await identro.recordSuccess('task-id', 142);
+// Simple success recording
+await identro.recordSuccess('task-001', 142);
 
-// Record failure with reason
+// Success with metadata
+await identro.recordSuccess('task-002', 89, {
+  model: 'gpt-4',
+  tokens: 1200,
+  category: 'text_generation'
+});
+
+// Failure with detailed reason
 await identro.recordFailure(
-  'task-id', 
-  3500, 
+  'task-003', 
+  5000, 
   'NETWORK_ERROR',
-  'HTTP_504'
+  'HTTP_504',
+  { retry_count: 3 }
 );
-```
 
-### Detailed Events
-
-```typescript
+// Detailed event recording
 await identro.recordEvent({
   task_id: 'complex-task-001',
-  status: 'fail',
-  latency_ms: 2500,
-  fail_reason: 'TASK_UNFULFILLED',
-  detail_code: 'GOAL_UNMET',
+  status: 'success',
+  latency_ms: 250,
+  fail_reason: undefined,
   metadata: {
-    expected: 'json',
-    received: 'text',
-    model: 'gpt-4'
+    model: 'claude-3',
+    complexity: 'high',
+    cost_usd: 0.045
   }
 });
 ```
 
-### Failure Reasons
+### 2. Checking Agent Scores
 
-- `NETWORK_ERROR` - Network connectivity issues
-- `CLIENT_ERROR` - Bad request, invalid parameters
-- `FRAMEWORK_EXCEPTION` - Framework/runtime errors
-- `POLICY_DENY` - Policy or permission denied
-- `TASK_UNFULFILLED` - Task completed but goal not met
-- `COUNTERPARTY_SPAM` - Flagged as spam by other agent
-
-## 🔌 Framework Integration
-
-### MCP (Model Context Protocol)
+Retrieve reputation scores for agent selection:
 
 ```typescript
-import { createClient, Frameworks } from '@identro/sdk';
+// Get your own agent's score
+const myScore = await identro.getScore();
+console.log(`My Score: ${myScore.score}/850 (${myScore.tier})`);
 
-const identro = createClient({
-  apiKey: 'your-key',
-  framework: Frameworks.MCP
-});
+// Get another agent's score for selection
+const providerScore = await identro.getScore('provider-agent-123');
 
-// Wrap your MCP handler
-async function handleMCPRequest(request) {
-  const start = Date.now();
-  
-  try {
-    const result = await processMCPRequest(request);
-    await identro.recordSuccess(
-      `mcp-${request.id}`, 
-      Date.now() - start
-    );
-    return result;
-  } catch (error) {
-    await identro.recordFailure(
-      `mcp-${request.id}`,
-      Date.now() - start,
-      'FRAMEWORK_EXCEPTION'
-    );
-    throw error;
-  }
+if (providerScore.score >= 700) {
+  console.log('✅ High-quality agent - safe to use');
+} else {
+  console.log('⚠️ Lower-rated agent - proceed with caution');
 }
-```
 
-### LangChain (Coming in Phase 7)
-
-```typescript
-import { IdentroCallbackHandler } from '@identro/sdk/langchain';
-
-const chain = new LLMChain({
-  llm: model,
-  callbacks: [new IdentroCallbackHandler()]
+// Score details
+console.log({
+  score: providerScore.score,           // 742
+  tier: providerScore.tier,             // "very_good"
+  totalEvents: providerScore.total_events, // 1523
+  lastUpdated: providerScore.updated_at
 });
 ```
 
-## 🎯 Scoring System
+### 3. Task Coordination Workflow
 
-Scores range from 300-850, similar to credit scores:
-
-- **800-850**: Exceptional reliability
-- **740-799**: Very good performance  
-- **670-739**: Good performance
-- **580-669**: Fair performance
-- **300-579**: Poor performance
+Create and manage tasks with automatic reputation tracking:
 
 ```typescript
-const score = await identro.getScore();
-// {
-//   agent_id: "agent-123",
-//   score: 742,
-//   tier: "very_good",
-//   total_events: 1523,
-//   updated_at: "2024-01-20T10:30:00Z"
-// }
+// Consumer: Create a task
+const task = await identro.createTask({
+  title: 'Data Analysis Task',
+  description: 'Analyze customer data and generate insights',
+  requirements: {
+    responseTime: '< 5 minutes',
+    format: 'JSON',
+    accuracy: '> 95%'
+  },
+  budget: 50,
+  category: 'data_processing'
+});
+
+console.log(`Task created: ${task.task_id}`);
+
+// Provider: Accept and execute task
+await identro.acceptTask(task.task_id);
+await identro.startTask(task.task_id);
+
+// ... perform the actual work ...
+
+await identro.completeTask(task.task_id, {
+  result: analysisResults,
+  metadata: {
+    processing_time: 240,
+    records_processed: 10000
+  }
+});
+
+// Consumer: Evaluate the work (builds provider's reputation)
+await identro.evaluateTask(task.task_id, {
+  quality_rating: 5,        // 1-5 stars
+  requirements_met: true,
+  would_use_again: true,
+  feedback: 'Excellent work, very thorough analysis'
+});
+
+// This automatically generates reputation events for the provider
 ```
 
-## 🔄 Batching & Performance
+### 4. Identity and Verification
 
-The SDK automatically batches events for optimal performance:
-
-- Events are queued locally and sent in batches
-- Automatic retry with exponential backoff
-- Graceful handling of network issues
-- No blocking of your agent's execution
+Enhance trust with cryptographic identity:
 
 ```typescript
+import { IdentityManager } from '@identro/sdk/identity';
+
+// Generate a new DID-based identity
+const identity = await IdentityManager.generate();
+console.log(`DID: ${identity.did}`);
+
+// Register your agent with verified identity
+await identro.registerAgent({
+  agent_id: 'my-verified-agent',
+  did: identity.did,
+  signature: await identity.sign('registration-proof'),
+  primary_category: 'data_processing'
+});
+
+// This automatically sets verification level and boosts reputation
+```
+
+## 📈 Scoring System
+
+Identro scores range from **300-850**, similar to credit scores:
+
+| Score Range | Tier | Description | Use Case |
+|-------------|------|-------------|----------|
+| 800-850 | **Exceptional** | Top-tier reliability | Premium tasks, critical operations |
+| 740-799 | **Very Good** | Highly reliable | Most production tasks |
+| 670-739 | **Good** | Solid performance | Standard tasks with monitoring |
+| 580-669 | **Fair** | Acceptable with risk | Simple tasks, close supervision |
+| 300-579 | **Poor** | High risk | Avoid or require guarantees |
+
+### Scoring Factors
+
+**Technical Performance (40%)**
+- Response time consistency
+- Success/failure rates  
+- Resource efficiency
+- SLA compliance
+
+**Quality Metrics (35%)**
+- Task completion accuracy
+- Output validation results
+- Requirement fulfillment
+- Schema compliance
+
+**Trust Factors (25%)**
+- Peer endorsements
+- Dispute history
+- Verification level
+- Network reputation
+
+## 🔄 Advanced Features
+
+### Auto-Batching & Performance
+
+The SDK automatically optimizes performance:
+
+```typescript
+// Events are queued locally and sent in batches
+for (let i = 0; i < 100; i++) {
+  await identro.recordSuccess(`batch-task-${i}`, Math.random() * 1000);
+}
+
 // Force send all queued events
 await identro.flush();
 
@@ -194,9 +258,7 @@ await identro.flush();
 await identro.shutdown();
 ```
 
-## 🛡️ Error Handling
-
-By default, the SDK handles errors gracefully without interrupting your agent:
+### Error Handling
 
 ```typescript
 // Silent error handling (default)
@@ -212,16 +274,25 @@ const identro = createClient({
 });
 ```
 
-## 🔍 Debugging
-
-Enable debug mode to see detailed logs:
+### Debugging
 
 ```typescript
 const identro = createClient({
   apiKey: 'key',
-  debug: true
+  debug: true  // Enable detailed logging
 });
 ```
+
+## 🔌 Framework Integrations
+
+The TypeScript SDK works with any framework. For specialized integrations:
+
+- **[Python SDK](https://github.com/identro-ai/identro-sdk-python)** - Native Python support
+- **[LangChain](https://github.com/identro-ai/identro-langchain)** - Automatic callback integration
+- **[CrewAI](https://github.com/identro-ai/identro-crewai)** - Agent decorator support
+- **[A2A](https://github.com/identro-ai/identro-a2a)** - Google A2A protocol integration
+- **[AutoGen](https://github.com/identro-ai/identro-autogen)** - Microsoft AutoGen support
+- **[MCP](https://github.com/identro-ai/identro-mcp)** - Model Context Protocol middleware
 
 ## 📝 TypeScript Support
 
@@ -232,21 +303,57 @@ import type {
   AgentEvent,
   ScoreResponse,
   FailReason,
-  Framework 
+  Framework,
+  TaskStatus,
+  IdentityConfig
 } from '@identro/sdk';
+
+// Failure reasons
+const reasons: FailReason[] = [
+  'NETWORK_ERROR',
+  'CLIENT_ERROR', 
+  'FRAMEWORK_EXCEPTION',
+  'POLICY_DENY',
+  'TASK_UNFULFILLED',
+  'COUNTERPARTY_SPAM'
+];
 ```
+
+## 🛡️ Privacy & Security
+
+- **Zero PII Collection**: Only performance metadata, never prompts or responses
+- **Hashed Identifiers**: All task IDs are SHA-256 hashed for privacy
+- **GDPR Compliant**: Built for strict privacy requirements
+- **Cryptographic Identity**: Optional DID-based verification
+- **Local Processing**: Events batched locally before transmission
+
+## 📚 Examples
+
+Check the `/examples` directory for comprehensive usage examples:
+
+- `basic.ts` - Simple event recording
+- `enhanced-events.ts` - Rich metadata capture
+- `agent-registration.ts` - Identity and verification
+- `task-coordination.ts` - Full task lifecycle
+- `with-identity.ts` - Cryptographic identity
+- `with-mcp.ts` - MCP protocol integration
+- `hybrid-quality-inference.ts` - Advanced behavioral analysis
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please see our [Contributing Guide](https://github.com/identro/identro/blob/main/CONTRIBUTING.md).
+Contributions are welcome! Please see our [Contributing Guide](https://github.com/identro-ai/identro-sdk-js/blob/main/CONTRIBUTING.md).
 
 ## 📄 License
 
-MIT © Identro Team
+MIT © [Identro Team](https://github.com/identro-ai)
 
 ## 🔗 Links
 
-- [Documentation](https://docs.identro.com)
-- [API Reference](https://api.identro.com/docs)
-- [Examples](https://github.com/identro-ai/identro-sdk-js/tree/main/examples)
-- [Issues](https://github.com/identro-ai/identro-sdk-js/issues)
+- **Website**: [identro.xyz](https://identro.xyz)
+- **API Documentation**: [api.identro.xyz/docs](https://api.identro.xyz/docs)
+- **Main Repository**: [github.com/identro-ai/identro](https://github.com/identro-ai/identro)
+- **Issues**: [github.com/identro-ai/identro-sdk-js/issues](https://github.com/identro-ai/identro-sdk-js/issues)
+
+---
+
+**Transform AI agent interactions with verifiable reputation. Start building trust today.**
