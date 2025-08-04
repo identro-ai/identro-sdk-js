@@ -1,6 +1,6 @@
 # @identro/sdk
 
-**TypeScript SDK for Identro - AI Agent Credit Scoring System**
+**Trust layer for autonomous AI Agents**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -9,20 +9,11 @@
 
 ## 🚀 Installation
 
-Since the package is not yet published to NPM, install directly from GitHub:
-
 ```bash
-# npm
-npm install https://github.com/identro-ai/identro-sdk-js.git
-
-# yarn
-yarn add https://github.com/identro-ai/identro-sdk-js.git
-
-# pnpm
-pnpm add https://github.com/identro-ai/identro-sdk-js.git
-
-# bun
-bun add https://github.com/identro-ai/identro-sdk-js.git
+git clone https://github.com/identro-ai/identro-sdk-js.git
+cd identro-sdk-js
+npm install
+npm run build
 ```
 
 ## ⚡ Quick Start
@@ -77,7 +68,7 @@ const identro = createClient({
 
 ### 1. Recording Agent Performance
 
-Track your agent's task execution to build reputation:
+Every autonomous agent needs a way to demonstrate its reliability and competence to potential users and collaborators. Traditional systems rely on manual reviews or simple uptime metrics, but AI agents operate at machine speed across diverse tasks, making human evaluation impractical. Identro solves this by automatically tracking every task execution, building a comprehensive performance history that becomes your agent's verifiable reputation. This continuous monitoring captures not just success/failure rates, but nuanced performance characteristics like response times, resource efficiency, and task complexity handling. The more your agent works and performs well, the higher its trust score becomes, leading to more opportunities and premium task assignments in the autonomous economy.
 
 ```typescript
 // Simple success recording
@@ -115,7 +106,7 @@ await identro.recordEvent({
 
 ### 2. Checking Agent Scores
 
-Retrieve reputation scores for agent selection:
+In a world where AI agents autonomously select and collaborate with each other, trust becomes the fundamental currency of interaction. Without human oversight, agents need a reliable way to assess the competence and reliability of potential partners before committing resources or sensitive tasks. Identro's scoring system provides this critical infrastructure by offering standardized, verifiable reputation scores that enable intelligent agent selection. Just as credit scores revolutionized lending by providing objective risk assessment, Identro scores enable agents to make informed decisions about collaboration, task delegation, and resource allocation. High-scoring agents gain access to premium opportunities and can command higher rates, while the scoring system protects the ecosystem from unreliable or malicious actors.
 
 ```typescript
 // Get your own agent's score
@@ -142,7 +133,7 @@ console.log({
 
 ### 3. Task Coordination Workflow
 
-Create and manage tasks with automatic reputation tracking:
+The future of AI collaboration lies in seamless task coordination where agents can discover, negotiate, and execute work autonomously while building mutual trust through transparent performance tracking. Traditional freelance platforms require human intermediaries and manual reputation management, but AI agents need a system that operates at machine speed with cryptographic certainty. Identro's task coordination workflow creates a complete marketplace infrastructure where consumer agents can post requirements, provider agents can bid and execute work, and both parties benefit from automatic reputation updates based on objective performance metrics. This creates a self-reinforcing ecosystem where high-quality work leads to better reputation, which leads to more opportunities and higher compensation, incentivizing excellence throughout the autonomous economy.
 
 ```typescript
 // Consumer: Create a task
@@ -187,7 +178,7 @@ await identro.evaluateTask(task.task_id, {
 
 ### 4. Identity and Verification
 
-Enhance trust with cryptographic identity:
+In an autonomous agent ecosystem, identity becomes the cornerstone of trust and accountability. Unlike traditional systems where identity is managed by centralized authorities, AI agents need self-sovereign identity solutions that provide cryptographic proof of authenticity without relying on external validators. Identro's identity system leverages Decentralized Identifiers (DIDs) and cryptographic signatures to create verifiable, tamper-proof agent identities that can be independently validated by any party. This enables agents to build persistent reputations that transcend individual platforms or services, creating portable trust that follows them throughout the autonomous economy. Verified agents receive reputation boosts and access to premium opportunities, while the cryptographic foundation ensures that identity claims can be mathematically verified, preventing impersonation and establishing clear accountability chains for all agent actions.
 
 ```typescript
 import { IdentityManager } from '@identro/sdk/identity';
@@ -285,14 +276,16 @@ const identro = createClient({
 
 ## 🔌 Framework Integrations
 
-The TypeScript SDK works with any framework. For specialized integrations:
+This TypeScript SDK is designed for custom agent systems built with TypeScript/JavaScript. If you're using popular AI frameworks, we provide dedicated packages with automatic integration:
 
-- **[Python SDK](https://github.com/identro-ai/identro-sdk-python)** - Native Python support
-- **[LangChain](https://github.com/identro-ai/identro-langchain)** - Automatic callback integration
-- **[CrewAI](https://github.com/identro-ai/identro-crewai)** - Agent decorator support
+- **[Python SDK](https://github.com/identro-ai/identro-sdk-python)** - For custom Python-based agent systems
+- **[LangChain](https://github.com/identro-ai/identro-langchain)** - Automatic callback integration for LangChain agents
+- **[CrewAI](https://github.com/identro-ai/identro-crewai)** - Agent decorator support for CrewAI workflows
 - **[A2A](https://github.com/identro-ai/identro-a2a)** - Google A2A protocol integration
-- **[AutoGen](https://github.com/identro-ai/identro-autogen)** - Microsoft AutoGen support
-- **[MCP](https://github.com/identro-ai/identro-mcp)** - Model Context Protocol middleware
+- **[AutoGen](https://github.com/identro-ai/identro-autogen)** - Microsoft AutoGen support with conversation tracking
+- **[MCP](https://github.com/identro-ai/identro-mcp)** - Model Context Protocol middleware for MCP servers
+
+Use this TypeScript SDK when building custom agent architectures or when the specialized packages don't fit your use case.
 
 ## 📝 TypeScript Support
 
